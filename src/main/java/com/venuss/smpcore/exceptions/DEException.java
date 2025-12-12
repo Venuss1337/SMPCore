@@ -1,7 +1,20 @@
 package com.venuss.smpcore.exceptions;
 
+import org.jetbrains.annotations.NotNull;
+
 public class DEException extends RuntimeException {
-  public DEException(String message) {
-    super(message);
-  }
+    DEExceptionType _type;
+
+    public DEException(String message) {
+        super(message);
+    }
+
+    public DEException(@NotNull DEExceptionType type) {
+        super(type.toString());
+        this._type = type;
+    }
+
+    public DEExceptionType getType() {
+        return _type;
+    }
 }
