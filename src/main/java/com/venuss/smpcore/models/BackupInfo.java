@@ -1,4 +1,7 @@
 package com.venuss.smpcore.models;
 
-public interface BackupInfo {
+import org.jooq.types.UInteger;
+
+public record BackupInfo(UInteger backupId, String nickname, String deathCause, String dateCreated) {
+
 }

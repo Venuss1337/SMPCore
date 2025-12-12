@@ -1,4 +1,4 @@
-package com.venuss.smpcore.database.user;
+package com.venuss.smpcore.database.repository;
 
 import com.venuss.smpcore.models.User;
 import org.jooq.DSLContext;
