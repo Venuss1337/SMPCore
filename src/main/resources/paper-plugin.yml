@@ -1,0 +1,5 @@
+name: SMPCore
+version: '1.0.0'
+main: com.venuss.smpcore.SMPCore
+api-version: '1.21'
+authors: [ Venuss ]
