@@ -4,10 +4,12 @@ import com.venuss.smpcore.commands.BackupCommand;
 import com.venuss.smpcore.database.DatabaseRepository;
 import com.venuss.smpcore.database.RepositoryRegistry;
 import com.venuss.smpcore.exceptions.DEException;
+import com.venuss.smpcore.listeners.InventoryListener;
 import com.venuss.smpcore.listeners.PlayerJoinListener;
 import com.venuss.smpcore.listeners.PlayerQuitListener;
 import com.venuss.smpcore.services.BackupService;
 import com.venuss.smpcore.services.ServiceManager;
+import com.venuss.smpcore.util.ItemBuilder;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -34,12 +36,15 @@ public final class SMPCore extends JavaPlugin {
                         .resolver(StandardTags.color())
                         .resolver(StandardTags.decorations())
                         .resolver(StandardTags.font())
+                        .resolver(StandardTags.reset())
                         .resolver(StandardTags.gradient())
                         .build()
                 )
                 .build();
 
         RepositoryRegistry.init(databaseRepository.getContext());
+
+        ItemBuilder.init(this.mm);
 
         ServiceManager serviceManager = new ServiceManager();
         serviceManager.registerService(BackupService.class, new BackupService(this));
@@ -51,6 +56,7 @@ public final class SMPCore extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerQuitListener(), this);
+        Bukkit.getPluginManager().registerEvents(new InventoryListener(mm), this);
     }
 
     @Override
