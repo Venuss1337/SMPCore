@@ -5,7 +5,6 @@ import com.venuss.smpcore.models.InventorySnapshot;
 import com.venuss.smpcore.util.InventorySerializer;
 import org.bukkit.entity.Player;
 import org.jooq.DSLContext;
-import org.jooq.Record2;
 import org.jooq.impl.DSL;
 import org.jooq.types.UInteger;
 
@@ -74,7 +73,7 @@ public class BackupRepository {
                                 record.get(PLAYER_INVENTORY_BACKUP.BACKUP_ID),
                                 playerNickname,
                                 record.get(PLAYER_INVENTORY_BACKUP.DEATH_CAUSE),
-                                record.get(PLAYER_INVENTORY_BACKUP.LAST_UPDATED).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                                record.get(PLAYER_INVENTORY_BACKUP.LAST_UPDATED).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME   )
                         )
                 );
             }
