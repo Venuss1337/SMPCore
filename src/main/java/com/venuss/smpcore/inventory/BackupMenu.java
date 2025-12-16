@@ -2,7 +2,6 @@ package com.venuss.smpcore.inventory;
 
 import com.venuss.smpcore.menu.PagedMenu;
 import com.venuss.smpcore.models.BackupInfo;
-import com.venuss.smpcore.util.InventoryHelper;
 import com.venuss.smpcore.util.ItemBuilder;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
@@ -87,7 +86,7 @@ public class BackupMenu extends PagedMenu {
                 .name("<blue>Informations")
                 .lore(
                         String.format("<gray>Player: <blue>%s", this.playerNickname),
-                        String.format("<gray>Current page: <blue>%d", this.currentPage + 1)
+                        String.format("<gray>Current page: <blue>%d", getCurrentPage() + 1)
                 )
                 .build());
         if (hasNextPage()) {

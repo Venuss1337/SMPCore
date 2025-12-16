@@ -83,10 +83,13 @@ public class MenuExamples {
         private void fillPageContent() {
             clear();
             
-            // Fill borders
+            // Fill borders (top row, bottom row, and sides)
             ItemStack border = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).name(" ").build();
-            for (int i = 0; i < 9; i++) setItem(i, border);
-            for (int i = 45; i < 54; i++) setItem(i, border);
+            for (int i = 0; i < 54; i++) {
+                if (i < 9 || i >= 45 || i % 9 == 0 || i % 9 == 8) {
+                    setItem(i, border);
+                }
+            }
             
             // Add navigation buttons
             if (hasPreviousPage()) {
