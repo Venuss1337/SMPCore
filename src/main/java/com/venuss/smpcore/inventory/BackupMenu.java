@@ -1,19 +1,18 @@
 package com.venuss.smpcore.inventory;
 
+import com.venuss.smpcore.menu.PagedMenu;
 import com.venuss.smpcore.models.BackupInfo;
-import com.venuss.smpcore.util.InventoryHelper;
 import com.venuss.smpcore.util.ItemBuilder;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class BackupMenu implements InventoryHolder {
+public class BackupMenu extends PagedMenu {
 
     private static final int[] INNER_SLOTS = {
             10, 11, 12, 13, 14, 15, 16,
@@ -22,20 +21,16 @@ public class BackupMenu implements InventoryHolder {
             37, 38, 39, 40, 41, 42, 43
     };
 
-    private final Inventory inventory;
-    private final ItemStack[] backups;
-    private int currentPage = 0;
-    private final int maxPages;
+    private final MiniMessage mm;
     private final String playerNickname;
 
     public BackupMenu(MiniMessage mm, List<BackupInfo> backupInfoList) {
-        this.inventory = Bukkit.createInventory(this, 54, mm.deserialize("<blue>Backup Menu"));
-        this.backups = new ItemStack[backupInfoList.size()];
-        this.maxPages = backupInfoList.size() / INNER_SLOTS.length + 1;
-        this.playerNickname = backupInfoList.getFirst().nickname();
+        super(54, mm.deserialize("<blue>Backup Menu"), INNER_SLOTS.length);
+        
+        this.mm = mm;
+        this.playerNickname = backupInfoList.isEmpty() ? "" : backupInfoList.getFirst().nickname();
 
-        System.out.println(maxPages);
-
+        List<ItemStack> backupItems = new ArrayList<>();
         int i = 0;
         for (BackupInfo backupInfo : backupInfoList) {
             ItemStack singleBackup = new ItemBuilder(Material.CHEST)
@@ -46,75 +41,101 @@ public class BackupMenu implements InventoryHolder {
                             String.format("<gray>ID: <blue>%d", backupInfo.backupId().intValue())
                     )
                     .build();
-            backups[i++] = singleBackup;
+            backupItems.add(singleBackup);
+            i++;
         }
-
+        
+        setItems(backupItems);
         fillMenu();
     }
+    
     /*
-     * Firstly clears all the slots, then fills with proper elements
+     * Fills the menu with borders, navigation, and backup slots
      */
     public void fillMenu() {
-        // fill the whole to zero
-        this.inventory.clear();
-        InventoryHelper.fillBorders(this.inventory, Material.GRAY_STAINED_GLASS_PANE, 54);
+        // Clear all and fill borders
+        clear();
+        fillBorders();
         fillNavigationSlots();
         fillBackupSlots();
+        update(); // Apply all buffered changes at once
     }
 
-    public void nextPage() {
-        // If the current page is equal to max pages, then nextPage should not be called
-        assert this.currentPage < this.maxPages;
-
-        currentPage += 1;
-        fillMenu();
-    }
-
-    public void previousPage() {
-        // If the current page is 0, then previousPage should not be called
-        assert this.currentPage > 0;
-
-        currentPage -= 1;
-        fillMenu();
+    /**
+     * Fills the border slots with decorative items
+     */
+    private void fillBorders() {
+        ItemStack borderItem = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).name(" ").build();
+        
+        int size = 54;
+        for (int i = 0; i < size; i++) {
+            if (i < 9 || i >= size - 9 || i % 9 == 0 || i % 9 == 8) {
+                setItem(i, borderItem);
+            }
+        }
     }
 
     /*
-     * Fills the last slots for navigation
+     * Fills the navigation slots
      */
     private void fillNavigationSlots() {
         for (int i = 47; i <= 51; i++) {
-            this.inventory.clear(i);
+            setItem(i, null);
         }
-        this.inventory.setItem(49, new ItemBuilder(Material.NETHER_STAR)
+        setItem(49, new ItemBuilder(Material.NETHER_STAR)
                 .name("<blue>Informations")
                 .lore(
                         String.format("<gray>Player: <blue>%s", this.playerNickname),
-                        String.format("<gray>Current page: <blue>%d", this.currentPage + 1)
+                        String.format("<gray>Current page: <blue>%d", getCurrentPage() + 1)
                 )
                 .build());
-        if (this.currentPage+1 != this.maxPages && this.maxPages > 0) {
-            this.inventory.setItem(51, new ItemBuilder(Material.ARROW).name("<blue>Next page").build());
+        if (hasNextPage()) {
+            setItem(51, new ItemBuilder(Material.ARROW).name("<blue>Next page").build());
         }
-        if (this.currentPage > 0 && this.maxPages > 0) {
-            this.inventory.setItem(47, new ItemBuilder(Material.ARROW).name("<blue>Previous page").build());
+        if (hasPreviousPage()) {
+            setItem(47, new ItemBuilder(Material.ARROW).name("<blue>Previous page").build());
         }
     }
+    
     private void fillBackupSlots() {
         for (var slot : INNER_SLOTS) {
-            this.inventory.clear(slot);
+            setItem(slot, null);
         }
 
-        // 0, 28, 56, 112
-        int helper = currentPage * INNER_SLOTS.length;
-        for (var slot : INNER_SLOTS) {
-            // length = 30 currentPage = 1 inner_slots.length = 28, helper = 29
-            if (helper >= backups.length) return;
-            this.inventory.setItem(slot, backups[helper++]);
+        List<ItemStack> pageItems = getCurrentPageItems();
+        for (int i = 0; i < pageItems.size() && i < INNER_SLOTS.length; i++) {
+            setItem(INNER_SLOTS[i], pageItems.get(i));
         }
     }
 
     @Override
-    public @NotNull Inventory getInventory() {
-        return this.inventory;
+    protected void onPageChange() {
+        fillMenu();
+    }
+
+    @Override
+    public void handleClick(@NotNull InventoryClickEvent event) {
+        int slot = event.getSlot();
+        ItemStack clickedItem = getItem(slot);
+        
+        if (clickedItem == null) {
+            return;
+        }
+
+        switch (clickedItem.getType()) {
+            case CHEST -> {
+                // TODO: Open backup player menu
+                BackupPlayerMenu backupPlayerMenu = new BackupPlayerMenu(mm, event.getWhoClicked());
+                event.getWhoClicked().closeInventory();
+                event.getWhoClicked().openInventory(backupPlayerMenu.getInventory());
+            }
+            case ARROW -> {
+                if (slot == 51) {
+                    nextPage();
+                } else if (slot == 47) {
+                    previousPage();
+                }
+            }
+        }
     }
 }

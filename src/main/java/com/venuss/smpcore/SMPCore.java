@@ -7,6 +7,7 @@ import com.venuss.smpcore.exceptions.DEException;
 import com.venuss.smpcore.listeners.InventoryListener;
 import com.venuss.smpcore.listeners.PlayerJoinListener;
 import com.venuss.smpcore.listeners.PlayerQuitListener;
+import com.venuss.smpcore.menu.MenuListener;
 import com.venuss.smpcore.services.BackupService;
 import com.venuss.smpcore.services.ServiceManager;
 import com.venuss.smpcore.util.ItemBuilder;
@@ -56,6 +57,7 @@ public final class SMPCore extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerQuitListener(), this);
+        Bukkit.getPluginManager().registerEvents(new MenuListener(), this);
         Bukkit.getPluginManager().registerEvents(new InventoryListener(mm), this);
     }
 
